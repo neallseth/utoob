@@ -4,7 +4,6 @@ import { Command } from "commander";
 import fs from "fs";
 import ytdl from "ytdl-core";
 import cliProgress from "cli-progress";
-const videoURL = "https://www.youtube.com/watch?v=J38Yq85ZoyY";
 
 const program = new Command();
 
@@ -41,7 +40,7 @@ function handleDownloadProgress(chunkLength, downloaded, total) {
 }
 
 async function startDownload(url, { filename, outputDir }) {
-  const info = await ytdl.getInfo(videoURL);
+  const info = await ytdl.getInfo(url);
 
   const videoTitle = filename || info.player_response.videoDetails.title;
   const outputDirectory = outputDir || process.cwd();
