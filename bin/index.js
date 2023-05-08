@@ -19,9 +19,7 @@ program
     "Target directory in which video file should be saved"
   )
   .action(startDownload);
-// .action(async (url, options) => {
-//   console.log(url, options);
-// });
+
 program.parse();
 
 const progress = new cliProgress.SingleBar(
@@ -42,37 +40,28 @@ function handleDownloadProgress(chunkLength, downloaded, total) {
   }
 }
 
-async function getVideoTitle(videoURL) {
-  // const info = await ytdl.getInfo(videoURL);
-  // return info.player_response.videoDetails.title;
-  const info = await ytdl.getBasicInfo(videoURL);
-  return info.videoDetails.title;
-}
-
 async function startDownload(url, { filename, outputDir }) {
-  const videoTitle = filename || (await getVideoTitle(url));
+  const info = await ytdl.getInfo(videoURL);
+
+  const videoTitle = filename || info.player_response.videoDetails.title;
   const outputDirectory = outputDir || process.cwd();
   const outputTarget = `${outputDirectory}/${videoTitle}.mp4`;
 
-  //   const viableFormats = info.formats.filter(
-  //     (format) => format.hasVideo && format.hasAudio && format.container === "mp4"
-  //   );
-  //   const bestFormat = viableFormats.reduce((acc, cur) =>
-  //     acc.width > cur.width ? acc : cur
-  //   );
+  const viableFormats = info.formats.filter(
+    (format) => format.hasVideo && format.hasAudio && format.container === "mp4"
+  );
+  const bestFormat = viableFormats.reduce((acc, cur) =>
+    acc.width > cur.width ? acc : cur
+  );
 
-  // if (bestFormat) {
-  //   console.log("Identified target stream - download will begin shortly");
-  // } else {
-  //   // handle unavailable case
-  // }
+  if (bestFormat) {
+    console.log("Identified target stream - beginning download");
+  } else {
+    console.error("Failed to identify target stream");
+    return;
+  }
 
-  //   const video = ytdl(videoURL);
-
-  const video = ytdl(url, {
-    filter: (format) =>
-      format.hasVideo && format.hasAudio && format.container === "mp4",
-  });
+  const video = ytdl.downloadFromInfo(info, { format: bestFormat });
   video.pipe(fs.createWriteStream(outputTarget));
   video.on("progress", handleDownloadProgress);
 }
