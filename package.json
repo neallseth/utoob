@@ -1,4 +1,5 @@
 {
+  "name": "utoob",
   "main": "./bin/index.js",
   "bin": {
     "utoob": "./bin/index.js"

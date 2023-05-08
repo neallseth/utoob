@@ -18,10 +18,10 @@ program
     "-o, --output-dir <directory>",
     "Target directory in which video file should be saved"
   )
-  // .action(startDownload);
-  .action((url, options) => {
-    console.log(url, options);
-  });
+  .action(startDownload);
+// .action(async (url, options) => {
+//   console.log(url, options);
+// });
 program.parse();
 
 const progress = new cliProgress.SingleBar(
@@ -43,11 +43,17 @@ function handleDownloadProgress(chunkLength, downloaded, total) {
 }
 
 async function getVideoTitle(videoURL) {
-  const info = await ytdl.getInfo(videoURL);
-  return info.player_response.videoDetails.title;
+  // const info = await ytdl.getInfo(videoURL);
+  // return info.player_response.videoDetails.title;
+  const info = await ytdl.getBasicInfo(videoURL);
+  return info.videoDetails.title;
 }
 
 async function startDownload(url, { filename, outputDir }) {
+  const videoTitle = filename || (await getVideoTitle(url));
+  const outputDirectory = outputDir || process.cwd();
+  const outputTarget = `${outputDirectory}/${videoTitle}.mp4`;
+
   //   const viableFormats = info.formats.filter(
   //     (format) => format.hasVideo && format.hasAudio && format.container === "mp4"
   //   );
@@ -63,17 +69,10 @@ async function startDownload(url, { filename, outputDir }) {
 
   //   const video = ytdl(videoURL);
 
-  const videoTitle = filename || (await getVideoTitle());
-  const outputDirectory = outputDir || process.cwd();
-  const outputTarget = `${outputDirectory}/${videoTitle}.mp4`;
-
   const video = ytdl(url, {
     filter: (format) =>
       format.hasVideo && format.hasAudio && format.container === "mp4",
   });
-  video.pipe(
-    // fs.createWriteStream(`/Users/neall/Documents/Videos/${videoTitle}.mp4`)
-    fs.createWriteStream(outputTarget)
-  );
+  video.pipe(fs.createWriteStream(outputTarget));
   video.on("progress", handleDownloadProgress);
 }
