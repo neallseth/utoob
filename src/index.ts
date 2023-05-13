@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
+import { Command, CommandOptions } from "commander";
+import { CommanderOptions, CommanderParsedValues } from "../types/types";
 import fs from "fs";
 import ytdl from "ytdl-core";
 import cliProgress from "cli-progress";
+import { sanitizeFilename } from "./utils/file-utils";
 
 const program = new Command();
 
@@ -28,7 +30,11 @@ const progress = new cliProgress.SingleBar(
 
 let downloadStarted = false;
 
-function handleDownloadProgress(chunkLength, downloaded, total) {
+function handleDownloadProgress(
+  chunkLength: number,
+  downloaded: number,
+  total: number
+) {
   if (!downloadStarted) {
     downloadStarted = true;
     progress.start(total, 0);
@@ -39,18 +45,27 @@ function handleDownloadProgress(chunkLength, downloaded, total) {
   }
 }
 
-async function startDownload(url, { filename, outputDir }) {
+async function startDownload(
+  url: string,
+  { filename, outputDir }: CommanderOptions
+) {
   const info = await ytdl.getInfo(url);
 
-  const videoTitle = filename || info.player_response.videoDetails.title;
+  const videoTitle = sanitizeFilename(
+    filename || info.player_response.videoDetails.title
+  );
   const outputDirectory = outputDir || process.cwd();
   const outputTarget = `${outputDirectory}/${videoTitle}.mp4`;
 
   const viableFormats = info.formats.filter(
-    (format) => format.hasVideo && format.hasAudio && format.container === "mp4"
+    (format) =>
+      format.hasVideo &&
+      format.hasAudio &&
+      format.container === "mp4" &&
+      format.width
   );
   const bestFormat = viableFormats.reduce((acc, cur) =>
-    acc.width > cur.width ? acc : cur
+    (acc.width || 0) > (cur.width || 0) ? acc : cur
   );
 
   if (bestFormat) {
