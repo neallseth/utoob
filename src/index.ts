@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command, CommandOptions } from "commander";
-import { CommanderOptions, CommanderParsedValues } from "../types/types";
+import { CommanderOptions, CommanderParsedValues } from "./types/types";
 import fs from "fs";
 import ytdl from "ytdl-core";
 import cliProgress from "cli-progress";
