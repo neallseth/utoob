@@ -1,6 +1,6 @@
 # utoob
 
-Youtube video downloader
+YouTube download CLI tool
 
 ## Installation
 Install globally with:
